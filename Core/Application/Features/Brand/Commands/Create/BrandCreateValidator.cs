@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace Core.Application.Features.Brand.Commands.Create;
 
-public class Validator : AbstractValidator<Request>
+public class BrandCreateValidator : AbstractValidator<BrandCreateRequest>
 {
-    public Validator()
+    public BrandCreateValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name field is required!")

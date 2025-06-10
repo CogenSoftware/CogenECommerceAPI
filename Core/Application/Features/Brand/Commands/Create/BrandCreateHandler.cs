@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace Core.Application.Features.Brand.Commands.Create;
 
-public class Handler : BaseHandler, IRequestHandler<Request, Unit>
+public class BrandCreateHandler : BaseHandler, IRequestHandler<BrandCreateRequest, Unit>
 {
     private readonly BrandRules _brandRules;
-    public Handler(
+    public BrandCreateHandler(
         BrandRules brandRules,
         IMapper mapper,
         IUnitOfWork unitOfWork,
@@ -20,11 +20,12 @@ public class Handler : BaseHandler, IRequestHandler<Request, Unit>
         _brandRules = brandRules;
     }
 
-    public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(BrandCreateRequest request, CancellationToken cancellationToken)
     {
         IList<Domain.Entities.Brand> brands = await _unitOfWork.GetReadRepository<Domain.Entities.Brand>().GetAllAsync();
         await _brandRules.BrandNameMustBeUniqueRule(brands, request.Name);
         Domain.Entities.Brand brand = new(request.Name);
+        brand.CreatedAt = DateTime.UtcNow.AddHours(3);
         await _unitOfWork.GetWriteRepository<Domain.Entities.Brand>().AddAsync(brand);
         await _unitOfWork.SaveAsync();
         return Unit.Value;

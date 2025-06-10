@@ -17,23 +17,39 @@ public class WriteRepository<T> : IWriteRepository<T> where T : class, IEntityBa
 
     public async Task AddAsync(T entity) => await _entity.AddAsync(entity);
     public async Task AddRangeAsync(List<T> entities) => await _entity.AddRangeAsync(entities);
-    public void Update(T entity) => _entity.Update(entity);
-    public void HardRemove(T entity) => _entity.Remove(entity);
-    public void HardRemoveRange(List<T> entities) => _entity.RemoveRange(entities);
-    public void SoftRemove(T entity)
+    public async Task<T> UpdateAsync(T entity)
     {
-        entity.IsDeleted = true;
-        entity.UpdatedAt = DateTime.UtcNow;
-        _entity.Update(entity);
+        await Task.Run(() => _entity.Update(entity));
+        return entity;
     }
-    public void SoftRemoveRange(List<T> entities)
+    public async Task HardRemoveAsync(T entity)
     {
-        foreach (var entity in entities)
+        await Task.Run(() => _entity.Remove(entity));
+    }
+    public async Task HardRemoveRangeAsync(List<T> entities)
+    {
+        await Task.Run(() => _entity.RemoveRange(entities));
+    }
+    public async Task SoftRemoveAsync(T entity)
+    {
+        await Task.Run(() =>
         {
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
-        }
-        _entity.UpdateRange(entities);
+            _entity.Update(entity);
+        });
+    }
+    public async Task SoftRemoveRangeAsync(List<T> entities)
+    {
+        await Task.Run(() =>
+        {
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+                entity.UpdatedAt = DateTime.UtcNow;
+            }
+            _entity.UpdateRange(entities);
+        });
     }
     public async Task<int> SaveChangesAsync() => await _dbContext.SaveChangesAsync();
 }

@@ -1,8 +1,10 @@
 
 using System.Reflection;
 using Core.Application.Bases;
+using Core.Application.Beheviors;
 using Core.Application.Exceptions;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Core.Application
@@ -15,7 +17,10 @@ namespace Core.Application
             services.AddTransient<ExceptionMiddleware>();
             services.AddRulesFromAssemblyContaining(assembly, typeof(BaseRules));
             services.AddMediatR(config => config.RegisterServicesFromAssembly(assembly));
+            services.AddValidatorsFromAssembly(assembly);
             ValidatorOptions.Global.LanguageManager.Culture = new System.Globalization.CultureInfo("en-GB");
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
+
         }
 
         public static IServiceCollection AddRulesFromAssemblyContaining(this IServiceCollection services, Assembly assembly, Type type)
